@@ -1,6 +1,8 @@
 package com.lizw.traininglog.controller;
 
+import com.lizw.traininglog.model.LogEntry;
 import com.lizw.traininglog.model.WorkoutEntry;
+import com.lizw.traininglog.repository.LogEntryRepository;
 import com.lizw.traininglog.repository.WorkoutEntryRepository;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,13 +13,21 @@ import java.util.List;
 public class WorkoutEntryController {
 
     private final WorkoutEntryRepository workoutEntryRepository;
+    private final LogEntryRepository logEntryRepository;
 
-    public WorkoutEntryController(WorkoutEntryRepository workoutEntryRepository) {
+    public WorkoutEntryController(WorkoutEntryRepository workoutEntryRepository,
+                                  LogEntryRepository logEntryRepository) {
         this.workoutEntryRepository = workoutEntryRepository;
+        this.logEntryRepository = logEntryRepository;
     }
 
     @GetMapping
-    public List<WorkoutEntry> getAllEntries() {
+    public List<WorkoutEntry> getEntries(@RequestParam(required = false) Long logEntryId) {
+        if (logEntryId != null) {
+            LogEntry logEntry = logEntryRepository.findById(logEntryId)
+                    .orElseThrow(() -> new RuntimeException("Entry not found"));
+            return workoutEntryRepository.findByLogEntry(logEntry);
+        }
         return workoutEntryRepository.findAll();
     }
 

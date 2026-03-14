@@ -1,7 +1,9 @@
 package com.lizw.traininglog.controller;
 
 import com.lizw.traininglog.model.MealEntry;
+import com.lizw.traininglog.model.NutritionEntry;
 import com.lizw.traininglog.repository.MealEntryRepository;
+import com.lizw.traininglog.repository.NutritionEntryRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,13 +13,21 @@ import java.util.List;
 public class MealEntryController {
 
     private final MealEntryRepository mealEntryRepository;
+    private final NutritionEntryRepository nutritionEntryRepository;
 
-    public MealEntryController(MealEntryRepository mealEntryRepository) {
+    public MealEntryController(MealEntryRepository mealEntryRepository,
+                               NutritionEntryRepository nutritionEntryRepository) {
         this.mealEntryRepository = mealEntryRepository;
+        this.nutritionEntryRepository = nutritionEntryRepository;
     }
 
     @GetMapping
-    public List<MealEntry> getAllEntries() {
+    public List<MealEntry> getEntries(@RequestParam(required = false) Long nutritionEntryId) {
+        if (nutritionEntryId != null) {
+            NutritionEntry nutritionEntry = nutritionEntryRepository.findById(nutritionEntryId)
+                    .orElseThrow(() -> new RuntimeException("Entry not found"));
+            return mealEntryRepository.findByNutritionEntry(nutritionEntry);
+        }
         return mealEntryRepository.findAll();
     }
 

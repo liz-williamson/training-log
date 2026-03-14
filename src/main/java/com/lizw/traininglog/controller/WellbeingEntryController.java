@@ -1,6 +1,8 @@
 package com.lizw.traininglog.controller;
 
+import com.lizw.traininglog.model.LogEntry;
 import com.lizw.traininglog.model.WellbeingEntry;
+import com.lizw.traininglog.repository.LogEntryRepository;
 import com.lizw.traininglog.repository.WellbeingEntryRepository;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,13 +13,21 @@ import java.util.List;
 public class WellbeingEntryController {
 
     private final WellbeingEntryRepository wellbeingEntryRepository;
+    private final LogEntryRepository logEntryRepository;
 
-    public WellbeingEntryController(WellbeingEntryRepository wellbeingEntryRepository) {
+    public WellbeingEntryController(WellbeingEntryRepository wellbeingEntryRepository,
+                                    LogEntryRepository logEntryRepository) {
         this.wellbeingEntryRepository = wellbeingEntryRepository;
+        this.logEntryRepository = logEntryRepository;
     }
 
     @GetMapping
-    public List<WellbeingEntry> getAllEntries() {
+    public List<WellbeingEntry> getEntries(@RequestParam(required = false) Long logEntryId) {
+        if (logEntryId != null) {
+            LogEntry logEntry = logEntryRepository.findById(logEntryId)
+                    .orElseThrow(() -> new RuntimeException("Entry not found"));
+            return wellbeingEntryRepository.findByLogEntry(logEntry);
+        }
         return wellbeingEntryRepository.findAll();
     }
 
